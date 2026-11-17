@@ -1,36 +1,38 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ZAHOOR – Online clothing store (Next.js)
 
-## Getting Started
+Women / Men / Kids fashion store with mega-menu, collections, filters, size selection, customer accounts,
+saved carts, guest + signed-in checkout, order tracking and an admin panel.
 
-First, run the development server:
+## Setup
 
 ```bash
+npm install
+cp .env.example .env      # fill in DATABASE_URL, AUTH_SECRET, Cloudinary keys
+npm run db:push           # creates / updates tables (use a fresh database, see note below)
+npm run db:seed           # creates the admin user from ADMIN_EMAIL / ADMIN_PASSWORD
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- Admin panel: `/admin` (add products with photos, sizes, colours, prices).
+- Customers: `/register`, `/login`, `/account`. Guests can also shop and check out.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+> **Database note:** the old watch columns (brand, movement, case size...) are replaced by clothing fields
+> (section, category, fabric, fit, sizes...). Use a **new / empty database**, or accept the column drops
+> when `drizzle-kit push` asks. Old watch products will not carry over.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Where to edit things
 
-## Learn More
+| What | File |
+| --- | --- |
+| Store name, phone, free-delivery rule, sizes | `src/lib/config.ts` |
+| Menu / categories (Men, Women, Kids) | `src/lib/taxonomy.ts` |
+| Home page banners (text, colours, photos) | `src/lib/banners.ts` |
+| Footer help pages (FAQ, shipping, returns...) | `src/lib/pages.ts` |
+| Colours / fonts | `src/app/globals.css`, `src/app/layout.tsx` |
 
-To learn more about Next.js, take a look at the following resources:
+## Performance notes
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Navigation is static (no DB). Catalog is one cached query (1 hour, refreshed instantly on admin save or new order).
+- Filters, search and sorting run in memory on that cached catalog.
+- Navbar cart count and "Hi, Name" come from small cookies, so pages stay cached.
+- Guest cart = cookie. Signed-in cart = database row set (merged on login).
